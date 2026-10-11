@@ -1,0 +1,31 @@
+name: tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - run: python -m pip install --upgrade pip
+      # The same ladder aura.environment climbs. pip 24.1 skips any release
+      # whose metadata is not valid PEP 440 and then reports it as missing, so
+      # a baseline that needs an older installer would fail here and every
+      # Dependabot pull request with it -- scoring this arm on a repository
+      # that never worked rather than on what Dependabot proposed.
+      # Then, as the arms do, the build tools of the pins' own era for a
+      # source distribution a current setuptools can no longer build.
+      - run: |
+          python -m pip install -r requirements.txt || { python -m pip install -q pip==24.0 && python -m pip install -r requirements.txt; } || { python -m pip install -q setuptools==44.1.1 wheel==0.34.2 && python -m pip install --no-build-isolation -r requirements.txt; }
+      - run: python -m pip install -e . --no-deps
+      # --deselect: tests that fail before anything is bumped. CI judges a
+      # pull request absolutely, the arms judge against the baseline; without
+      # this the project's own broken test fails every pull request.
+      - run: python -m pytest tests --deselect tests/test_lib.py::LibTestCase::test_bundle_path --deselect tests/test_lib.py::LibTestCase::test_client_execute_mapping_debug --deselect tests/test_lib.py::LibTestCase::test_count --deselect tests/test_lib.py::LibTestCase::test_create_bundle --deselect tests/test_lib.py::LibTestCase::test_create_patient --deselect tests/test_lib.py::LibTestCase::test_create_without_id --deselect tests/test_lib.py::LibTestCase::test_delete --deselect tests/test_lib.py::LibTestCase::test_equality --deselect tests/test_lib.py::LibTestCase::test_get_more_than_one_resources --deselect tests/test_lib.py::LibTestCase::test_get_not_existing_id --deselect tests/test_lib.py::LibTestCase::test_get_resource_by_id_is_deprecated --deselect tests/test_lib.py::LibTestCase::test_get_resource_by_search --deselect tests/test_lib.py::LibTestCase::test_get_resource_by_search_with_id --deselect tests/test_lib.py::LibTestCase::test_is_valid --deselect tests/test_lib.py::LibTestCase::test_not_found_error --deselect tests/test_lib.py::LibTestCase::test_operation_outcome_error --deselect tests/test_lib.py::LibTestCase::test_reference_from_external_reference --deselect tests/test_lib.py::LibTestCase::test_reference_from_local_reference --deselect tests/test_lib.py::LibTestCase::test_reference_from_resource_type_and_id --deselect tests/test_lib.py::LibTestCase::test_references_after_save --deselect tests/test_lib.py::LibTestCase::test_resource_execute_mapping_debug --deselect tests/test_lib.py::LibTestCase::test_resource_success --deselect tests/test_lib.py::LibTestCase::test_resource_without_resource_type_failed --deselect tests/test_lib.py::LibTestCase::test_serialize --deselect tests/test_lib.py::LibTestCase::test_to_reference_for_reference --deselect tests/test_lib.py::LibTestCase::test_to_reference_for_resource --deselect tests/test_lib.py::LibTestCase::test_to_reference_for_resource_without_id --deselect tests/test_lib.py::LibTestCase::test_to_resource_for_external_reference --deselect tests/test_lib.py::LibTestCase::test_to_resource_for_local_reference --deselect tests/test_lib.py::LibTestCase::test_to_resource_for_resource --deselect tests/test_lib.py::LibTestCase::test_update_patient --deselect tests/test_lib_async.py::TestLibAsyncCase::test_bundle_path --deselect tests/test_lib_async.py::TestLibAsyncCase::test_client_execute_mapping_debug --deselect tests/test_lib_async.py::TestLibAsyncCase::test_count --deselect tests/test_lib_async.py::TestLibAsyncCase::test_create_bundle --deselect tests/test_lib_async.py::TestLibAsyncCase::test_create_patient --deselect tests/test_lib_async.py::TestLibAsyncCase::test_create_without_id --deselect tests/test_lib_async.py::TestLibAsyncCase::test_delete --deselect tests/test_lib_async.py::TestLibAsyncCase::test_equality --deselect tests/test_lib_async.py::TestLibAsyncCase::test_get_more_than_one_resources --deselect tests/test_lib_async.py::TestLibAsyncCase::test_get_not_existing_id --deselect tests/test_lib_async.py::TestLibAsyncCase::test_get_resource_by_id_is_deprecated --deselect tests/test_lib_async.py::TestLibAsyncCase::test_get_resource_by_search --deselect tests/test_lib_async.py::TestLibAsyncCase::test_get_resource_by_search_with_id --deselect tests/test_lib_async.py::TestLibAsyncCase::test_is_valid --deselect tests/test_lib_async.py::TestLibAsyncCase::test_not_found_error --deselect tests/test_lib_async.py::TestLibAsyncCase::test_operation_outcome_error --deselect tests/test_lib_async.py::TestLibAsyncCase::test_reference_from_external_reference --deselect tests/test_lib_async.py::TestLibAsyncCase::test_reference_from_local_reference --deselect tests/test_lib_async.py::TestLibAsyncCase::test_reference_from_resource_type_and_id --deselect tests/test_lib_async.py::TestLibAsyncCase::test_references_after_save --deselect tests/test_lib_async.py::TestLibAsyncCase::test_resource_execute_mapping_debug --deselect tests/test_lib_async.py::TestLibAsyncCase::test_resource_success --deselect tests/test_lib_async.py::TestLibAsyncCase::test_resource_without_resource_type_failed --deselect tests/test_lib_async.py::TestLibAsyncCase::test_serialize --deselect tests/test_lib_async.py::TestLibAsyncCase::test_to_reference_for_reference --deselect tests/test_lib_async.py::TestLibAsyncCase::test_to_reference_for_resource --deselect tests/test_lib_async.py::TestLibAsyncCase::test_to_reference_for_resource_without_id --deselect tests/test_lib_async.py::TestLibAsyncCase::test_to_resource_for_external_reference --deselect tests/test_lib_async.py::TestLibAsyncCase::test_to_resource_for_local_reference --deselect tests/test_lib_async.py::TestLibAsyncCase::test_to_resource_for_resource --deselect tests/test_lib_async.py::TestLibAsyncCase::test_update_patient
